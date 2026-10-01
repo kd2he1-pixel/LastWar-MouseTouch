@@ -37,15 +37,26 @@ jobs:
         working-directory: LastWarMouseTouch_Android_Project_v1.3_READY
         run: gradle :app:assembleRelease --stacktrace
 
+      - name: Verify APK signature
+        working-directory: LastWarMouseTouch_Android_Project_v1.3_READY
+        run: |
+          "$ANDROID_SDK_ROOT/build-tools/35.0.0/apksigner" verify --verbose --print-certs app/build/outputs/apk/release/app-release.apk
+
+      - name: Inspect APK
+        working-directory: LastWarMouseTouch_Android_Project_v1.3_READY
+        run: |
+          "$ANDROID_SDK_ROOT/build-tools/35.0.0/aapt2" dump badging app/build/outputs/apk/release/app-release.apk | head -n 30
+          unzip -l app/build/outputs/apk/release/app-release.apk | grep 'lib/arm64-v8a/libscreenrotation.so'
+
       - name: Rename APK
         working-directory: LastWarMouseTouch_Android_Project_v1.3_READY
-        run: cp app/build/outputs/apk/release/app-release.apk ScreenRotation_MouseTouch_LastWar_v1.3.apk
+        run: cp app/build/outputs/apk/release/app-release.apk ScreenRotation_MouseTouch_LastWar_v1.4.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: ScreenRotation_MouseTouch_LastWar_v1.3
-          path: LastWarMouseTouch_Android_Project_v1.3_READY/ScreenRotation_MouseTouch_LastWar_v1.3.apk
+          name: ScreenRotation_MouseTouch_LastWar_v1.4
+          path: LastWarMouseTouch_Android_Project_v1.3_READY/ScreenRotation_MouseTouch_LastWar_v1.4.apk
           if-no-files-found: error
 
       - name: Publish APK
@@ -53,7 +64,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release delete v1.3 --cleanup-tag -y || true
-          gh release create v1.3 ScreenRotation_MouseTouch_LastWar_v1.3.apk \
-            --title "화면 회전 + 마우스 터치 v1.3" \
-            --notes "Galaxy Tab용 Last War 화면 회전 + 블루투스 마우스 터치 변환 APK"
+          gh release delete v1.4 --cleanup-tag -y || true
+          gh release create v1.4 ScreenRotation_MouseTouch_LastWar_v1.4.apk \
+            --title "화면 회전 + 마우스 터치 v1.4" \
+            --notes "Galaxy Tab용 Last War 화면 회전 + 블루투스 마우스 터치 변환 APK. APK 서명 검증 및 네이티브 라이브러리 레거시 패키징 적용."
